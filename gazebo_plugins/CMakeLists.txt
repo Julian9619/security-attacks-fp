@@ -30,11 +30,11 @@ include_directories(
 )
 
 add_library(your_model-plugin_name src/your_model-plugin_src_name.cpp)
-target_link_libraries(myCollisionModelPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(your_model-plugin_name ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 
 add_library(your_sensor-plugin_name src/your_sensor-plugin_src_name.cpp)
-target_link_libraries(myCollisionSensorPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(your_sensor-plugin_name ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 ##wiederhole für jedes plugin das du hinzufügen willst
 
