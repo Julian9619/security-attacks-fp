@@ -3,8 +3,9 @@
 ## Inhalt des Repositories
 Derzeit befindet sich nur ein Catkin-Workspace im Repository
 
-## Mit dem Repository arbeiten
 ---
+## Mit dem Repository arbeiten
+
 ### Catkin-Workspace starten
 
 1. Ladet euch das gesamte Repository herunter
