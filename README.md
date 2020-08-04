@@ -1,4 +1,4 @@
-# security-attacks on CPS simulated in Gazebo and CAN network simulated in omnet++
+# Simulating Security Attacks on Embedded Systems
 
 ## Inhalt des Repositories
 Derzeit befindet sich nur ein Catkin-Workspace im Repository
