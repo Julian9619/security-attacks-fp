@@ -14,3 +14,4 @@
 
 nachdem alles kompiliert ist
 - git status -s | grep -e "^\?\?" | cut -c 4- >> .gitignore
+
