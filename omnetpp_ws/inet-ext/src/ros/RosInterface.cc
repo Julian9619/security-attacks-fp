@@ -22,13 +22,13 @@ void RosInterface::handleMessage(cMessage *msg) {
         //////////////////////////////
         std_msgs::Int8MultiArray rosMsg;
         rosMsg.data.push_back(1);
-        rosMsg.data.push_back(1);
+        rosMsg.data.push_back(2);
 
         auto pkt = new Packet;
-        auto data = makeShared<RosMsg>();
-        data->setChunkLength(rosMsgLength);
-        data->setId(rosMsg.data[0]);
-        data->setData(rosMsg.data[1]);
+        auto data = makeShared<BytesChunk>();
+        int d0 = rosMsg.data[0];
+        int d1 = rosMsg.data[1];
+        data->setBytes({d0, d1});
         pkt->insertAtBack(data);
         sendDirect(pkt, gates.at(0));
         //////////////////////////////
@@ -41,10 +41,10 @@ void RosInterface::handleMessage(cMessage *msg) {
 void RosInterface::callback(const std_msgs::Int8MultiArrayConstPtr &msg, cGate *gate) {
     // modify pkt
     auto pkt = new Packet;
-    auto data = makeShared<RosMsg>();
-    data->setChunkLength(rosMsgLength);
-    data->setId(msg->data[0]);
-    data->setData(msg->data[1]);
+    auto data = makeShared<BytesChunk>();
+    int d0 = msg->data[0];
+    int d1 = msg->data[1];
+    data->setBytes({d0, d1});
     pkt->insertAtBack(data);
 
     // send pkt to corresponding node
@@ -59,9 +59,11 @@ void RosInterface::publish(cModule* module, cMessage *msg) {
 
     //////////////////////////////
     auto pkt = check_and_cast<Packet *>(msg);
-    auto data = pkt->popAtBack<RosMsg>(rosMsgLength);
-    rosMsg.data.push_back(data->getData());
-    rosMsg.data.push_back(data->getId());
+    auto data = pkt->popAtBack<BytesChunk>(B(2));
+    int d0 = data->getByte(0);
+    int d1 = data->getByte(1);
+    rosMsg.data.push_back(d0);
+    rosMsg.data.push_back(d1);
 //    EV_INFO << data->str() << "\n";
     //////////////////////////////
 

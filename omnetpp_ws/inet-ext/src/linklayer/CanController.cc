@@ -85,7 +85,7 @@ void CanController::configureInterfaceEntry() {
 void CanController::handleSelfMessage(cMessage *msg)
 {
     EV << "received self message: " << msg << endl;
-    handleWithFsm(msg);
+//    handleWithFsm(msg);
 }
 
 void CanController::handleUpperPacket(Packet *packet) {
@@ -93,18 +93,20 @@ void CanController::handleUpperPacket(Packet *packet) {
     encapsulate(frame);
 
     EV << "received frame from higher layer: " << frame << endl;
-    txQueue->pushPacket(frame);
-    if (fsm.getState() != IDLE)
-        EV << "deferring upper message transmission in " << fsm.getStateName() << " state\n";
-    else if (!txQueue->isEmpty()){
-        popTxQueue();
-        handleWithFsm(currentTxFrame);
-    }
+//    txQueue->pushPacket(frame);
+//    if (fsm.getState() != IDLE)
+//        EV << "deferring upper message transmission in " << fsm.getStateName() << " state\n";
+//    else if (!txQueue->isEmpty()){
+//        popTxQueue();
+//        handleWithFsm(currentTxFrame);
+//    }
+    send(packet, "lowerLayerOut");
 }
 
 void CanController::handleLowerPacket(Packet *packet) {
     EV << "received message from lower layer: " << packet << endl;
-    handleWithFsm(packet);
+//    handleWithFsm(packet);
+    send(packet, "upperLayerOut");
 }
 
 void CanController::handleWithFsm(cMessage *msg)

@@ -6,7 +6,6 @@
 #include "inet/common/INETDefs.h"
 #include "inet/common/packet/Packet.h"
 #include "inet/applications/base/ApplicationBase.h"
-#include "inet/can/RosMsg_m.h"
 
 using namespace inet;
 
@@ -16,7 +15,6 @@ class RosInterface : public cSimpleModule
     std::vector<cGate *> gates;
     std::vector<ros::Subscriber> subs;
     std::map<std::string, ros::Publisher> pubs;
-    B rosMsgLength = B(2);
 
   protected:
     virtual void initialize() override;

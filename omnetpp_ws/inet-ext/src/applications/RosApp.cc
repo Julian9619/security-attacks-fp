@@ -9,7 +9,6 @@
 #include "inet/linklayer/common/Ieee802SapTag_m.h"
 #include "inet/linklayer/common/MacAddressTag_m.h"
 #include "inet/networklayer/common/L3AddressResolver.h"
-#include "inet/can/RosMsg_m.h"
 #include "inet/common/packet/Packet.h"
 
 using namespace inet;
