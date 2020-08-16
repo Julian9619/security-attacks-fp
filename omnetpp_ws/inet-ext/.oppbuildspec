@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<buildspec version="4.0">
-    <dir makemake-options="--deep -I. -I/opt/ros/kinetic/include -L/opt/ros/kinetic/lib -L/usr/lib/x86_64-linux-gnu -lconsole_bridge -lpthread -lboost_atomic -lboost_date_time -lboost_chrono -lboost_thread -lboost_system -lcpp_common -lrostime -lroscpp_serialization -lxmlrpcpp -lboost_regex -llog4cxx -lrosconsole_backend_interface -lrosconsole_log4cxx -lrosconsole -lboost_signals -lboost_filesystem -lroscpp --meta:recurse --meta:use-exported-include-paths --meta:export-library --meta:use-exported-libs" path="src" type="makemake"/>
-    <dir path="." type="custom"/>
-</buildspec>
