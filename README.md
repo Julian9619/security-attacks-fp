@@ -14,7 +14,8 @@ Derzeit befindet sich nur ein Catkin-Workspace im Repository
 2. in my_folder: "cd security-attacks-fp/security_attacks_fp_ws"
 3. "catkin_make"
 4. nun ist euer Wokspace einsatzbereit und entspricht dem Muster aus dem Repository
-5. Um Simulationen zu starten: "roslaunch launch/my_launch_file_name.launch"
+5. In die Konsole "source ./devel/setup.bash"
+6. Um Simulationen zu starten: "roslaunch launch/my_launch_file_name.launch"
     * z.B.: "roslaunch launch/collision_world.launch"
   
 ### Dateien und Simulationen zum Repository hinzufügen
