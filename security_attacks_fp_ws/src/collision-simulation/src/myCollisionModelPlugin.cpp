@@ -25,6 +25,8 @@ namespace gazebo
         /// updated signal and the OnUpdate callback.
         private: event::ConnectionPtr updateConnection;
 
+        private: bool collisionDetected;
+
         private: std::unique_ptr<ros::NodeHandle> rosNode;
 
         private: ros::NodeHandle n;
@@ -75,6 +77,8 @@ namespace gazebo
             sender_pub = n.advertise<std_msgs::Int8MultiArray>("from_motor", 1000);
 
             itCounter = 1000;
+
+            collisionDetected = false;
             
             //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
             //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
@@ -83,6 +87,10 @@ namespace gazebo
             own_msg.data.push_back(2); //CAN-Topic
             own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
             ///////////TODO////////////TODO/////////////
+
+            this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
+            this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
+            ROS_WARN("setVelocity test");
 
 
         }//end of load
@@ -100,8 +108,19 @@ namespace gazebo
                     sender_pub.publish(requestmsg);
                 }
                 itCounter = 0;
+                ROS_WARN("%f",this->model->GetJoint("left_wheel_hinge")->GetVelocity(0));
+                ROS_WARN("%f",this->model->GetJoint("right_wheel_hinge")->GetVelocity(0));
+                if(collisionDetected) {
+                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, 0.0);
+                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, 0.0);
+                }
+                else {
+                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
+                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
+                }
             }
             itCounter++;
+
 
         }//end of update
 
@@ -111,8 +130,8 @@ namespace gazebo
             ROS_WARN("model recieved: %d %d", msg->data[0], msg->data[1]);
             if(msg->data[0]==1){
                 if(msg->data[1]==1){
-                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, 0);
-                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, 0);
+                    collisionDetected = true;
+                    ROS_WARN("%d", collisionDetected);
                 }
             }
         }
