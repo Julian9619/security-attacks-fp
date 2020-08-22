@@ -35,7 +35,7 @@
             </link>
 
             <link name='left_wheel'>
-                <pose>0.25 0.325 0.175 1.5707 0 0</pose>
+                <pose>0.325 0.325 0.175 1.5707 0 0</pose>
 
                 <visual name='left_wheel_visual'>
                     <pose>0 0 0 0 -0 0</pose>
@@ -59,7 +59,7 @@
             </link>
 
             <link name='right_wheel'>
-                <pose>0.25 -0.325 0.175 1.5707 0 0</pose>
+                <pose>0.325 -0.325 0.175 1.5707 0 0</pose>
 
                 <visual name='right_wheel_visual'>
                     <pose>0 0 0 0 -0 0</pose>
@@ -82,7 +82,55 @@
                 </collision>
             </link>
 
-            <link name='central_wheel'>
+            <link name='second_left_wheel'>
+                <pose>-0.325 0.325 0.175 1.5707 0 0</pose>
+
+                <visual name='second_left_wheel_visual'>
+                    <pose>0 0 0 0 -0 0</pose>
+                    <geometry>
+                        <cylinder>
+                            <radius>0.175</radius>
+                            <length>0.145</length>
+                        </cylinder>
+                    </geometry>
+                </visual>
+
+                <collision name='second_left_wheel_collision'>
+                    <pose>0 0 0 0 -0 0</pose>
+                    <geometry>
+                        <cylinder>
+                            <radius>0.175</radius>
+                            <length>0.145</length>
+                        </cylinder>
+                    </geometry>
+                </collision>
+            </link>
+
+            <link name='second_right_wheel'>
+                <pose>-0.325 -0.325 0.175 1.5707 0 0</pose>
+
+                <visual name='second_right_wheel_visual'>
+                    <pose>0 0 0 0 -0 0</pose>
+                    <geometry>
+                        <cylinder>
+                            <radius>0.175</radius>
+                            <length>0.145</length>
+                        </cylinder>
+                    </geometry>
+                </visual>
+
+                <collision name='second_right_wheel_collision'>
+                    <pose>0 0 0 0 -0 0</pose>
+                    <geometry>
+                        <cylinder>
+                            <radius>0.175</radius>
+                            <length>0.145</length>
+                        </cylinder>
+                    </geometry>
+                </collision>
+            </link>
+
+            <!--<link name='central_wheel'>
                 <pose>-0.25 0 0.175 0 0 0</pose>
 
                 <visual name='central_wheel_visual'>
@@ -102,7 +150,7 @@
                         </sphere>
                     </geometry>
                 </collision>
-            </link>
+            </link>-->
 
            <!-- <model name='collision_sensor'>
                 <link name='collision_sensor_link'>
@@ -179,11 +227,29 @@
                 </axis>
             </joint>
 
-            <joint type='ball' name='central_wheel_hinge'>
+            <joint type='revolute' name='second_left_wheel_hinge'>
+                <pose>0 0 0 0 0 0</pose>
+                <child>second_left_wheel</child>
+                <parent>chassis</parent>
+                <axis>
+                    <xyz>0 0 1</xyz>
+                </axis>
+            </joint>
+
+            <joint type='revolute' name='second_right_wheel_hinge'>
+                <pose>0 0 0 0 0 0</pose>
+                <child>second_right_wheel</child>
+                <parent>chassis</parent>
+                <axis>
+                    <xyz>0 0 1</xyz>
+                </axis>
+            </joint>-
+
+            <!--<joint type='ball' name='central_wheel_hinge'>
                 <pose>0 0 0 0 0 0</pose>
                 <child>central_wheel</child>
                 <parent>chassis</parent>
-            </joint>
+            </joint>-->
 
             <joint type='fixed' name='collision_sensor_joint'>
                 <pose>0 0 0 0 0 0</pose>
@@ -196,11 +262,10 @@
 
 
 
-<!--
         <model name="box">
             <static>true</static>
             <link name="link">
-                <pose>4 0 0.5 0 0 0</pose>
+                <pose>6 0 0.5 0 0 0</pose>
                 <collision name="box_collision">
                 <geometry>
                     <box>
@@ -216,6 +281,6 @@
                 </geometry>
                 </visual>
             </link>
-        </model>-->
+        </model>
     </world>
 </sdf>
