@@ -32,8 +32,14 @@ include_directories(
 add_library(myCollisionModelPlugin src/myCollisionModelPlugin.cpp)
 target_link_libraries(myCollisionModelPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-
 add_library(myCollisionSensorPlugin src/myCollisionSensorPlugin.cpp)
 target_link_libraries(myCollisionSensorPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(carPlugin src/carPlugin.cpp)
+target_link_libraries(carPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(postbox1Plugin src/postbox1Plugin.cpp)
+target_link_libraries(postbox1Plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(postbox2Plugin src/postbox2Plugin.cpp)
+target_link_libraries(postbox2Plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
