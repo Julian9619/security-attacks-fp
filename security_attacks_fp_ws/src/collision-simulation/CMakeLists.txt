@@ -36,4 +36,14 @@ target_link_libraries(myCollisionModelPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRAR
 add_library(myCollisionSensorPlugin src/myCollisionSensorPlugin.cpp)
 target_link_libraries(myCollisionSensorPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(myRecieverPlugin src/myRecieverPlugin.cpp)
+target_link_libraries(myRecieverPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(myMotorPlugin src/myMotorPlugin.cpp)
+target_link_libraries(myMotorPlugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(postbox1Plugin src/postbox1Plugin.cpp)
+target_link_libraries(postbox1Plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(postbox2Plugin src/postbox2Plugin.cpp)
+target_link_libraries(postbox2Plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
