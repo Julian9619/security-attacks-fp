@@ -22,7 +22,7 @@ network CanNet
             parameters:
                 @display("p=100,200");
         }
-        sensor: CanHost {
+        reciever: CanHost {
             parameters:
                 @display("p=250,200");
         }
@@ -36,6 +36,6 @@ network CanNet
         }
     connections:
         bus.cang++ <--> C <--> hostA.cang;
-        bus.cang++ <--> C <--> sensor.cang;
+        bus.cang++ <--> C <--> reciever.cang;
         bus.cang++ <--> C <--> motor.cang;
 }

@@ -12,23 +12,25 @@ using namespace inet;
 class CanController : public MacProtocolBase
 {
   protected:
+    B arbitrationLength = B(1);
+    simtime_t backoffPeriod = 10us;
+
     enum State {
         IDLE,
-        DEFER,
+        ARBITRATION,
         TRANSMIT,
         RECEIVE,
+        DEFER,
         BACKOFF,
     };
 
     cFSM fsm;
 
-    /** Remaining backoff period in seconds */
-    simtime_t backoffPeriod = -1;
+    cMessage *endBackoff = nullptr;
+    cMessage *endData = nullptr;
 
-    /** Number of frame retransmission attempts. */
-    int retryCounter = -1;
-
-    B canHeaderLength = B(8);
+  public:
+    virtual ~CanController();
 
   protected:
     virtual void initialize(int stage) override;
@@ -41,10 +43,6 @@ class CanController : public MacProtocolBase
 
     virtual void encapsulate(Packet *frame);
     virtual void decapsulate(Packet *frame);
-
-    void sendDataFrame(Packet *frame);
-    void finishCurrentTransmission();
-    bool isMediumFree();
 };
 
 #endif // ifndef __CANCONTROLLER_H
@@ -56,6 +54,11 @@ class CanController : public MacProtocolBase
 // register module class with OMNeT++
 Define_Module(CanController);
 
+CanController::~CanController() {
+    cancelAndDelete(endBackoff);
+    cancelAndDelete(endData);
+}
+
 /// TODO ///
 /// Can Msg Frames,
 /// Packet erzeugen
@@ -63,17 +66,12 @@ Define_Module(CanController);
 void CanController::initialize(int stage) {
     MacProtocolBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
-        // initialize self messages
-//        endBackoff = new cMessage("Backoff");
-//        endData = new cMessage("Data");
-
-        // set up internal queue
         txQueue = check_and_cast<queueing::IPacketQueue *>(getSubmodule("queue"));
 
-        // state variables
-        fsm.setName("CsmaCaMac State Machine");
-        backoffPeriod = -1;
-        retryCounter = 0;
+        fsm.setName("CanController State Machine");
+
+        endBackoff = new cMessage("Backoff");
+        endData = new cMessage("Data");
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
     }
@@ -82,65 +80,59 @@ void CanController::initialize(int stage) {
 void CanController::configureInterfaceEntry() {
 }
 
-void CanController::handleSelfMessage(cMessage *msg)
-{
+void CanController::handleSelfMessage(cMessage *msg) {
     EV << "received self message: " << msg << endl;
-//    handleWithFsm(msg);
+    handleWithFsm(msg);
 }
 
 void CanController::handleUpperPacket(Packet *packet) {
-    auto frame = check_and_cast<Packet *>(packet);
-    encapsulate(frame);
+    encapsulate(packet);
 
-    EV << "received frame from higher layer: " << frame << endl;
-//    txQueue->pushPacket(frame);
-//    if (fsm.getState() != IDLE)
-//        EV << "deferring upper message transmission in " << fsm.getStateName() << " state\n";
-//    else if (!txQueue->isEmpty()){
-//        popTxQueue();
-//        handleWithFsm(currentTxFrame);
-//    }
-    send(packet, "lowerLayerOut");
+    EV << "received frame from higher layer: " << packet << endl;
+    txQueue->pushPacket(packet);
+    if (fsm.getState() != IDLE)
+        EV << "deferring upper message transmission in " << fsm.getStateName() << " state\n";
+    else if (!txQueue->isEmpty()){
+        popTxQueue();
+        handleWithFsm(currentTxFrame);
+    }
 }
 
 void CanController::handleLowerPacket(Packet *packet) {
     EV << "received message from lower layer: " << packet << endl;
-//    handleWithFsm(packet);
-    send(packet, "upperLayerOut");
+    handleWithFsm(packet);
 }
 
-void CanController::handleWithFsm(cMessage *msg)
-{
-//    Packet *frame = dynamic_cast<Packet *>(msg);
+void CanController::handleWithFsm(cMessage *msg) {
+    Packet *frame = dynamic_cast<Packet *>(msg);
     FSMA_Switch(fsm)
     {
         FSMA_State(IDLE)
         {
-            FSMA_Event_Transition(Idle-Transmit,
-                                  msg->arrivedOn("upperLayerIn"),
+            FSMA_Event_Transition(Idle-Arbitration,
+                                  isUpperMessage(msg),
+                                  ARBITRATION,
+            );
+        }
+        FSMA_State(ARBITRATION)
+        {
+            FSMA_Event_Transition(Arbitration-Transmit,
+                                  isUpperMessage(msg),
                                   TRANSMIT,
                                   scheduleAt(simTime(), currentTxFrame);
             );
-            FSMA_Event_Transition(Idle-Recieve,
-                                  msg->arrivedOn("lowerLayerIn"),
-                                  RECEIVE,
+            FSMA_Event_Transition(Arbitration-Backoff,
+                                  isUpperMessage(msg),
+                                  BACKOFF,
                                   scheduleAt(simTime(), currentTxFrame);
             );
         }
-        FSMA_State(TRANSMIT)
+        FSMA_State(BACKOFF)
         {
-            FSMA_Event_Transition(Transmit-Idle,
-                                  true,
+            FSMA_Event_Transition(Backoff-Idle,
+                                  msg->arrivedOn("upperLayerIn"),
                                   IDLE,
-                                  send(msg, "lowerLayerOut");
-            );
-        }
-        FSMA_State(RECEIVE)
-        {
-            FSMA_Event_Transition(Recieve-Idle,
-                                  true,
-                                  IDLE,
-                                  send(msg, "upperLayerOut");
+                                  scheduleAt(simTime(), currentTxFrame);
             );
         }
     }
@@ -154,26 +146,13 @@ void CanController::handleWithFsm(cMessage *msg)
     }
 }
 
-void CanController::encapsulate(Packet *frame)
-{
+void CanController::encapsulate(Packet *frame) {
+    auto arbitrationField = makeShared<BytesChunk>();
+    arbitrationField->setBytes({10});
+    frame->insertAtFront(arbitrationField);
 }
 
-void CanController::decapsulate(Packet *frame)
-{
-}
-
-void CanController::sendDataFrame(Packet *frame)
-{
-    EV << "sending Data frame " << frame->getName() << endl;
-    send(frame, "lowerLayerOut");
-}
-
-void CanController::finishCurrentTransmission()
-{
-}
-
-bool CanController::isMediumFree()
-{
-    return true;
+void CanController::decapsulate(Packet *frame) {
+    frame->popAtFront<BytesChunk>(B(1));
 }
 
