@@ -8,9 +8,15 @@ using namespace inet;
 
 class CanBus : public cSimpleModule
 {
+  private:
+    cMessage *currentMsg = nullptr;
+    cMessage *selfMsg = nullptr;
+
   protected:
-    virtual void initialize() override {};
+    virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
+
+    void deleteCurrentMsg();
 };
 
 #endif // ifndef __CANBUS_H
@@ -22,11 +28,29 @@ class CanBus : public cSimpleModule
 // register module class with OMNeT++
 Define_Module(CanBus);
 
+void CanBus::initialize() {
+    selfMsg = new cMessage("SelfMsg");
+}
+
 void CanBus::handleMessage(cMessage *msg) {
-    //send back to all nodes
-    int size = gateSize("cang$o");
-    for (int i = 0; i < size; i++) {
-        send(msg->dup(), "cang$o", i);
+    if (msg->isSelfMessage()) {
+        //send currentMsg to all nodes
+        int size = gateSize("cang$o");
+        for (int i = 0; i < size; i++) {
+            send(currentMsg->dup(), "cang$o", i);
+        }
+        deleteCurrentMsg();
+    } else {
+        if(currentMsg == nullptr) {
+            scheduleAt(simTime()+1, selfMsg);
+        } else {
+            deleteCurrentMsg();
+        }
+        currentMsg = msg;
     }
-    delete msg;
+}
+
+void CanBus::deleteCurrentMsg() {
+    delete currentMsg;
+    currentMsg = nullptr;
 }

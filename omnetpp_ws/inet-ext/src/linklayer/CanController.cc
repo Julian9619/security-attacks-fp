@@ -13,21 +13,22 @@ class CanController : public MacProtocolBase
 {
   protected:
     B arbitrationLength = B(1);
-    simtime_t backoffPeriod = 10us;
+    int identifier = 2;
+//    simtime_t backoffPeriod = 10us;
 
     enum State {
         IDLE,
         ARBITRATION,
         TRANSMIT,
         RECEIVE,
-        DEFER,
         BACKOFF,
     };
 
     cFSM fsm;
 
-    cMessage *endBackoff = nullptr;
-    cMessage *endData = nullptr;
+    cMessage *arbitrationMsg = nullptr;
+    cMessage *arbitration = nullptr;
+    cMessage *transmit = nullptr;
 
   public:
     virtual ~CanController();
@@ -43,6 +44,10 @@ class CanController : public MacProtocolBase
 
     virtual void encapsulate(Packet *frame);
     virtual void decapsulate(Packet *frame);
+
+    virtual void initArbitration();
+    virtual void sendDataFrame(Packet *frameToSend);
+    virtual Packet *getCurrentTransmission();
 };
 
 #endif // ifndef __CANCONTROLLER_H
@@ -55,8 +60,9 @@ class CanController : public MacProtocolBase
 Define_Module(CanController);
 
 CanController::~CanController() {
-    cancelAndDelete(endBackoff);
-    cancelAndDelete(endData);
+    cancelAndDelete(arbitrationMsg);
+    cancelAndDelete(arbitration);
+    cancelAndDelete(transmit);
 }
 
 /// TODO ///
@@ -70,8 +76,7 @@ void CanController::initialize(int stage) {
 
         fsm.setName("CanController State Machine");
 
-        endBackoff = new cMessage("Backoff");
-        endData = new cMessage("Data");
+        arbitrationMsg = new cMessage("ArbitrationMsg");
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
     }
@@ -86,7 +91,7 @@ void CanController::handleSelfMessage(cMessage *msg) {
 }
 
 void CanController::handleUpperPacket(Packet *packet) {
-    encapsulate(packet);
+//    encapsulate(packet);
 
     EV << "received frame from higher layer: " << packet << endl;
     txQueue->pushPacket(packet);
@@ -109,30 +114,43 @@ void CanController::handleWithFsm(cMessage *msg) {
     {
         FSMA_State(IDLE)
         {
-            FSMA_Event_Transition(Idle-Arbitration,
+            FSMA_Event_Transition(Idle-Transmit,
                                   isUpperMessage(msg),
-                                  ARBITRATION,
+                                  TRANSMIT, //ARBITRATION,
+            );
+            FSMA_Event_Transition(Idle-Receive,
+                                  isLowerMessage(msg),
+                                  RECEIVE,
             );
         }
         FSMA_State(ARBITRATION)
         {
-            FSMA_Event_Transition(Arbitration-Transmit,
-                                  isUpperMessage(msg),
-                                  TRANSMIT,
-                                  scheduleAt(simTime(), currentTxFrame);
-            );
-            FSMA_Event_Transition(Arbitration-Backoff,
-                                  isUpperMessage(msg),
-                                  BACKOFF,
-                                  scheduleAt(simTime(), currentTxFrame);
+//            FSMA_Enter(sendDown(arbitrationMsg->dup()));
+//            FSMA_Event_Transition(Arbitration-Transmit,
+//                                  msg == arbitrationMsg,
+//                                  TRANSMIT,
+//            );
+//            FSMA_Event_Transition(Arbitration-Receive,
+//                                  arbitrationSuccessful(msg),
+//                                  RECEIVE,
+//                                  cancelAndDelete(msg);
+//            );
+        }
+        FSMA_State(TRANSMIT)
+        {
+            FSMA_Enter(sendDown(currentTxFrame->dup()));
+            FSMA_No_Event_Transition(Transmit-Idle,
+                                     true,
+                                     IDLE,
+                                     deleteCurrentTxFrame();
             );
         }
-        FSMA_State(BACKOFF)
+        FSMA_State(RECEIVE)
         {
-            FSMA_Event_Transition(Backoff-Idle,
-                                  msg->arrivedOn("upperLayerIn"),
-                                  IDLE,
-                                  scheduleAt(simTime(), currentTxFrame);
+            FSMA_Enter(sendUp(msg));
+            FSMA_No_Event_Transition(Receive-Idle,
+                                     true,
+                                     IDLE,
             );
         }
     }
@@ -153,6 +171,26 @@ void CanController::encapsulate(Packet *frame) {
 }
 
 void CanController::decapsulate(Packet *frame) {
-    frame->popAtFront<BytesChunk>(B(1));
+    frame->popAtFront<BytesChunk>(arbitrationLength);
 }
 
+void CanController::initArbitration()
+{
+    sendDown(arbitration);
+}
+
+//void CanController::arbitrationSuccessful(){
+//
+//}
+
+void CanController::sendDataFrame(Packet *frameToSend)
+{
+    EV << "sending Data frame " << frameToSend->getName() << endl;
+    sendDown(frameToSend->dup());
+}
+
+Packet *CanController::getCurrentTransmission()
+{
+    ASSERT(currentTxFrame != nullptr);
+    return currentTxFrame;
+}
