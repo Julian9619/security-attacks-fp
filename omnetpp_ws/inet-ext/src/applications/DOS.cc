@@ -1,5 +1,5 @@
-#ifndef __ROSAPP2_H
-#define __ROSAPP2_H
+#ifndef __DOS_H
+#define __DOS_H
 
 #include "ros/RosInterface.h"
 #include "inet/common/ModuleAccess.h"
@@ -13,11 +13,8 @@
 
 using namespace inet;
 
-class RosApp2 : public ApplicationBase
+class DOS : public ApplicationBase
 {
-  protected:
-    RosInterface *ros = nullptr;
-
   protected:
     virtual void initialize(int stage) override;
 
@@ -28,47 +25,48 @@ class RosApp2 : public ApplicationBase
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
 };
 
-#endif // ifndef __ROSAPP2_H
+#endif // ifndef __DOS_H
 
-//#include "RosApp2.h"
+//#include "DOS.h"
 //
 //using namespace inet;
 
 // register module class with OMNeT++
-Define_Module(RosApp2);
+Define_Module(DOS);
 
 /// TODO ///
 /// message lowerLayer with IDENTIFIER
 
-void RosApp2::initialize(int stage) {
+void DOS::initialize(int stage) {
     ApplicationBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        ros = getModuleFromPar<RosInterface>(par("rosModule"), this);
-        ros->addRos(this);
     }
+    scheduleAt(simTime(), new cMessage("selfMessage"));
 }
 
-void RosApp2::handleMessageWhenUp(cMessage *msg) {
-    if (msg->arrivedOn("rosIn")) {
+void DOS::handleMessageWhenUp(cMessage *msg) {
+    if (msg->isSelfMessage()) {
         // send to bus
-        send(msg, "lowerLayerOut");
-    }
-    else {
-        // send to ros
-        ros->publish(this, msg);
+        auto pkt = new Packet;
+        auto dataField = makeShared<BytesChunk>();
+        dataField->setBytes({0, 0});
+        pkt->insertAtBack(dataField);
+        send(pkt, "lowerLayerOut");
+
+        scheduleAt(simTime()+1, msg);
     }
 }
 
-void RosApp2::handleStartOperation(LifecycleOperation *operation) {
+void DOS::handleStartOperation(LifecycleOperation *operation) {
     EV_INFO << "Starting application\n";
 }
 
-void RosApp2::handleStopOperation(LifecycleOperation *operation) {
+void DOS::handleStopOperation(LifecycleOperation *operation) {
     EV_INFO << "Stop the application\n";
 }
 
-void RosApp2::handleCrashOperation(LifecycleOperation *operation) {
+void DOS::handleCrashOperation(LifecycleOperation *operation) {
     EV_INFO << "Crash the application\n";
 }
 

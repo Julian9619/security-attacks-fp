@@ -8,6 +8,8 @@
 #include <omnetpp/platdep/platdefs.h>
 #include <omnetpp/regmacros.h>
 #include <iostream>
+#include <algorithm>
+#include <iostream>
 #include <vector>
 
 #include "inet/common/FSMA.h"
@@ -30,6 +32,8 @@ class CanController : public MacProtocolBase
 {
   protected:
     int identifier;
+    std::vector<int> subscriber;
+    bool isSubscribed = false;
 
     enum State {
         IDLE,
@@ -59,6 +63,7 @@ class CanController : public MacProtocolBase
     virtual void decapsulate(Packet *frame);
 
     virtual bool arbitrationSuccess(Packet *frame);
+    virtual void checkIfSubscribed(Packet *frame);
 };
 
 #endif // ifndef __CANCONTROLLER_H
@@ -83,6 +88,7 @@ void CanController::initialize(int stage) {
     MacProtocolBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
         identifier = par("identifier");
+        subscriber = cStringTokenizer(par("subscriber").stringValue()).asIntVector();
 
         //initialize Queue
         txQueue = check_and_cast<queueing::IPacketQueue *>(getSubmodule("queue"));
@@ -143,7 +149,7 @@ void CanController::handleWithFsm(cMessage *msg) {
             FSMA_Event_Transition(Idle-Backoff,
                                   isLowerMessage(msg) && frame->getKind()==PRIO,
                                   BACKOFF,
-                                  delete msg;
+                                  checkIfSubscribed(frame);
             );
         }
         FSMA_State(ARBITRATION)
@@ -157,13 +163,13 @@ void CanController::handleWithFsm(cMessage *msg) {
             FSMA_Event_Transition(Arbitration-Backoff,
                                   isLowerMessage(msg) && !arbitrationSuccess(frame),
                                   BACKOFF,
-                                  delete msg;
+                                  checkIfSubscribed(frame);
             );
         }
         FSMA_State(BACKOFF)
         {
             FSMA_Event_Transition(Backoff-Receive,
-                                  isLowerMessage(msg) && frame->getKind()==DATA,
+                                  isLowerMessage(msg) && frame->getKind()==DATA && isSubscribed,
                                   RECEIVE,
             );
             FSMA_Event_Transition(Backoff-Idle,
@@ -204,6 +210,18 @@ void CanController::encapsulate(Packet *frame) {
 }
 
 void CanController::decapsulate(Packet *frame) {
+}
+
+void CanController::checkIfSubscribed(Packet *frame) {
+    if( frame->getKind() == PRIO ) {
+        auto data = frame->peekDataAsBits();
+        int c=0;
+        for(int i=0; i<8; i++) {
+            if(!data->getBit(i)) c++;
+        }
+        isSubscribed = std::count(subscriber.begin(), subscriber.end(), c);
+    }
+    delete frame;
 }
 
 bool CanController::arbitrationSuccess(Packet *frame){

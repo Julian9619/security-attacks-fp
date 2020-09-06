@@ -20,32 +20,32 @@ void RosInterface::handleMessage(cMessage *msg) {
         ros::spinOnce();
 
         //////////////////////////////
-        std_msgs::Int8MultiArray msgInt8;
-        std_msgs::Int8MultiArray *rosMsg = &msgInt8;
-        rosMsg->data.push_back(1);
-        rosMsg->data.push_back(2);
-
-        auto pkt = new Packet;
-        auto data = makeShared<BytesChunk>();
-        int d0 = rosMsg->data[0];
-        int d1 = rosMsg->data[1];
-        data->setBytes({d0, d1});
-        pkt->insertAtBack(data);
-        sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt->dup(), gates.at(2));
-        sendDirect(pkt->dup(), gates.at(2));
-        sendDirect(pkt->dup(), gates.at(2));
-        sendDirect(pkt->dup(), gates.at(2));
-        sendDirect(pkt->dup(), gates.at(2));
-        sendDirect(pkt->dup(), gates.at(3));
-        sendDirect(pkt->dup(), gates.at(3));
-        sendDirect(pkt->dup(), gates.at(3));
-        sendDirect(pkt, gates.at(3));
-        EV_INFO << data->str() << "\n";
+//        std_msgs::Int8MultiArray msgInt8;
+//        std_msgs::Int8MultiArray *rosMsg = &msgInt8;
+//        rosMsg->data.push_back(1);
+//        rosMsg->data.push_back(2);
+//
+//        auto pkt = new Packet;
+//        auto data = makeShared<BytesChunk>();
+//        int d0 = rosMsg->data[0];
+//        int d1 = rosMsg->data[1];
+//        data->setBytes({d0, d1});
+//        pkt->insertAtBack(data);
+//        sendDirect(pkt->dup(), gates.at(1));
+//        sendDirect(pkt->dup(), gates.at(1));
+//        sendDirect(pkt->dup(), gates.at(1));
+//        sendDirect(pkt->dup(), gates.at(1));
+//        sendDirect(pkt->dup(), gates.at(1));
+//        sendDirect(pkt->dup(), gates.at(2));
+//        sendDirect(pkt->dup(), gates.at(2));
+//        sendDirect(pkt->dup(), gates.at(2));
+//        sendDirect(pkt->dup(), gates.at(2));
+//        sendDirect(pkt->dup(), gates.at(2));
+//        sendDirect(pkt->dup(), gates.at(3));
+//        sendDirect(pkt->dup(), gates.at(3));
+//        sendDirect(pkt->dup(), gates.at(3));
+//        sendDirect(pkt, gates.at(3));
+//        EV_INFO << data->str() << "\n";
         //////////////////////////////
 
         // schedule next call
