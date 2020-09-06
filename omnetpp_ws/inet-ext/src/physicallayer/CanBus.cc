@@ -80,16 +80,14 @@ void CanBus::handleMessage(cMessage *msg) {
 void CanBus::merge(cMessage *msg) {
     Packet *frame = dynamic_cast<Packet *>(msg);
     Packet *currentFrame = dynamic_cast<Packet *>(currentMsg);
-    int frameSize = frame->getByteLength();
+    int frameSize = frame->getBitLength();
     auto data = frame->peekDataAsBits();
     //Pop data
-    auto currentData = currentFrame->popAtFront<BitsChunk>(B(frameSize));
+    auto currentData = currentFrame->popAtFront<BitsChunk>(b(frameSize));
     //modify it
     auto tmpData = (Ptr<BitsChunk>) currentData->dup();
-    for(int i=0; i<frameSize*8; i++) {
-        if( !data->getBit(i) ) {
-            tmpData->setBit(i, 0);
-        }
+    for(int i=0; i<frameSize; i++) {
+        if( !data->getBit(i) ) tmpData->setBit(i, 0);
     }
     delete frame;
     //Push data back

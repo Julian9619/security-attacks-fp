@@ -95,7 +95,7 @@ void CanController::initialize(int stage) {
         arbitrationMsg->setKind(PRIO);
         auto data = makeShared<BitsChunk>();
         data->setBits({0,0,0,0,0,0,0,0});
-        for(int i=0; i<identifier; i++) {
+        for(int i=0; i<=identifier; i++) {
             data->setBit(i, 1);
         }
         arbitrationMsg->insertAtBack(data);
@@ -210,7 +210,7 @@ void CanController::decapsulate(Packet *frame) {
 bool CanController::arbitrationSuccess(Packet *frame){
     if( frame->getKind() == PRIO ) {
         auto data = frame->peekDataAsBits();
-        for(int i=0; i<identifier; i++) {
+        for(int i=0; i<=identifier; i++) {
             if(!data->getBit(i)) return false;
         }
     }
