@@ -50,7 +50,7 @@ void DOS::handleMessageWhenUp(cMessage *msg) {
         // send to bus
         auto pkt = new Packet;
         auto dataField = makeShared<BytesChunk>();
-        dataField->setBytes({0, 0});
+        dataField->setBytes({0});
         pkt->insertAtBack(dataField);
         send(pkt, "lowerLayerOut");
 

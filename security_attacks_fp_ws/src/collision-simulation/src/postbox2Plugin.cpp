@@ -89,7 +89,7 @@ namespace gazebo
         {          
 
             //sende RequestNachricht für SensorCollision alle 10 iterationen
-            if(itCounter==1000){
+            if(itCounter==5000){
                 if(ros::ok()) {
                     sender_pub.publish(postboxMsg);
                     //ROS_WARN("postbox2 send");

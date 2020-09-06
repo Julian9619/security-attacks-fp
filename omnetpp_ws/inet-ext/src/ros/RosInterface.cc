@@ -58,8 +58,7 @@ void RosInterface::callback(const std_msgs::Int8MultiArrayConstPtr &msg, cGate *
     auto pkt = new Packet;
     auto dataField = makeShared<BytesChunk>();
     int d0 = msg->data[0];
-    int d1 = msg->data[1];
-    dataField->setBytes({d0, d1});
+    dataField->setBytes({d0});
     pkt->insertAtBack(dataField);
 
     // send pkt to corresponding node
@@ -76,9 +75,7 @@ void RosInterface::publish(cModule* module, cMessage *msg) {
     auto pkt = check_and_cast<Packet *>(msg);
     auto dataField = pkt->popAtBack<BytesChunk>(B(2));
     int d0 = dataField->getByte(0);
-    int d1 = dataField->getByte(1);
     rosMsg.data.push_back(d0);
-    rosMsg.data.push_back(d1);
     EV_INFO << dataField->str() << "\n";
     //////////////////////////////
 

@@ -76,13 +76,7 @@ namespace gazebo
 
             sender_pub = n.advertise<std_msgs::Int8MultiArray>("from_reciever", 1000);
             
-            //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
-            //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
-            
-            ///////////TODO////////////TODO/////////////
-            //own_msg.data.push_back(2); //CAN-Topic
-            //own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-            ///////////TODO////////////TODO////////////
+
 
             ROS_WARN("Reciever loaded");
         }//end of load
@@ -96,13 +90,13 @@ namespace gazebo
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
             std_msgs::Int8MultiArray recieverMsg;
-            recieverMsg.data.push_back(1);
+            recieverMsg.data.push_back(0);
             //ROS_WARN("Receiver revieved message");
             recieverMsg.data[0] = msg->data[0];
 
 
             sender_pub.publish(recieverMsg);
-            //ROS_WARN("reveiver sended message");
+            ROS_WARN("reveiver sended message: %d", recieverMsg.data[0]);
         }
 
         // ROS helper function that processes messages
