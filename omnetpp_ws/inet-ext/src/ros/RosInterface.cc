@@ -11,6 +11,7 @@ void RosInterface::initialize() {
     ros::init(argc, argv, "omnetpp");
 
     // create selfMsg
+    delay = par("delay");
     scheduleAt(simTime(), new cMessage("selfMessage"));
 }
 
@@ -20,7 +21,7 @@ void RosInterface::handleMessage(cMessage *msg) {
         ros::spinOnce();
 
         // schedule next call
-        scheduleAt(simTime()+1, msg); //TOTO simTime
+        scheduleAt(simTime()+delay, msg); //TOTO simTime
 
         //////////////////////////////
 //        std_msgs::Int8MultiArray msgInt8;

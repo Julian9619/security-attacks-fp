@@ -47,6 +47,9 @@ Define_Module(CanBus);
 void CanBus::initialize() {
     freeSignal = new Packet;
     freeSignal->setKind(BUSFREE);
+    auto dataField = makeShared<BytesChunk>();
+    dataField->setBytes({0});
+    freeSignal->insertAtBack(dataField);
 
     delay = par("delay");
     interFrameSpace = par("interFrameSpace");
