@@ -32,12 +32,24 @@ void RosInterface::handleMessage(cMessage *msg) {
         data->setBytes({d0, d1});
         pkt->insertAtBack(data);
         sendDirect(pkt->dup(), gates.at(1));
-        sendDirect(pkt, gates.at(2));
+        sendDirect(pkt->dup(), gates.at(1));
+        sendDirect(pkt->dup(), gates.at(1));
+        sendDirect(pkt->dup(), gates.at(1));
+        sendDirect(pkt->dup(), gates.at(1));
+        sendDirect(pkt->dup(), gates.at(2));
+        sendDirect(pkt->dup(), gates.at(2));
+        sendDirect(pkt->dup(), gates.at(2));
+        sendDirect(pkt->dup(), gates.at(2));
+        sendDirect(pkt->dup(), gates.at(2));
+        sendDirect(pkt->dup(), gates.at(3));
+        sendDirect(pkt->dup(), gates.at(3));
+        sendDirect(pkt->dup(), gates.at(3));
+        sendDirect(pkt, gates.at(3));
         EV_INFO << data->str() << "\n";
         //////////////////////////////
 
         // schedule next call
-        scheduleAt(simTime() + 10, msg); //TOTO simTime
+        scheduleAt(simTime()+1, msg); //TOTO simTime
     }
 }
 

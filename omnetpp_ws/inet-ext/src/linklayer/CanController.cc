@@ -8,14 +8,13 @@
 #include <omnetpp/platdep/platdefs.h>
 #include <omnetpp/regmacros.h>
 #include <iostream>
+#include <vector>
 
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/FSMA.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/InitStages.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BitsChunk.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BytesChunk.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/Packet.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/Ptr.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/Units.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/linklayer/base/MacProtocolBase.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/queueing/contract/IPacketQueue.h"
 #include "../MsgType.cc"

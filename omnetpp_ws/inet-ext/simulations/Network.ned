@@ -30,6 +30,10 @@ network CanNet
             parameters:
                 @display("p=400,200");
         }
+        sensor: CanHost {
+            parameters:
+                @display("p=550,200");
+        }
         bus: CanBus {
             parameters:
                 @display("p=325,100;b=500,6;o=#408060");
@@ -38,4 +42,5 @@ network CanNet
         bus.cang++ <--> C <--> hostA.cang;
         bus.cang++ <--> C <--> reciever.cang;
         bus.cang++ <--> C <--> motor.cang;
+        bus.cang++ <--> C <--> sensor.cang;
 }
