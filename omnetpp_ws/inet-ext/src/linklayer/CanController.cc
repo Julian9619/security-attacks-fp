@@ -156,12 +156,12 @@ void CanController::handleWithFsm(cMessage *msg) {
         {
             FSMA_Enter(sendDown(arbitrationMsg->dup()));
             FSMA_Event_Transition(Arbitration-Transmit,
-                                  isLowerMessage(msg) && arbitrationSuccess(frame),
+                                  isLowerMessage(msg) && frame->getKind()==PRIO && arbitrationSuccess(frame),
                                   TRANSMIT,
-                                  delete msg;
+                                  checkIfSubscribed(frame);
             );
             FSMA_Event_Transition(Arbitration-Backoff,
-                                  isLowerMessage(msg) && !arbitrationSuccess(frame),
+                                  isLowerMessage(msg) && frame->getKind()==PRIO && !arbitrationSuccess(frame),
                                   BACKOFF,
                                   checkIfSubscribed(frame);
             );
@@ -181,8 +181,8 @@ void CanController::handleWithFsm(cMessage *msg) {
         FSMA_State(TRANSMIT)
         {
             FSMA_Enter(sendDown(currentTxFrame->dup()));
-            FSMA_Event_Transition(Transmit-Backoff,
-                                  isLowerMessage(msg) && frame->getKind()==DATA,
+            FSMA_No_Event_Transition(Transmit-Backoff,
+                                  true,
                                   BACKOFF,
                                   deleteCurrentTxFrame();
             );
@@ -213,23 +213,19 @@ void CanController::decapsulate(Packet *frame) {
 }
 
 void CanController::checkIfSubscribed(Packet *frame) {
-    if( frame->getKind() == PRIO ) {
-        auto data = frame->peekDataAsBits();
-        int c=0;
-        for(int i=0; i<8; i++) {
-            if(!data->getBit(i)) c++;
-        }
-        isSubscribed = std::count(subscriber.begin(), subscriber.end(), c);
+    auto data = frame->peekDataAsBits();
+    int c=0;
+    for(int i=0; i<=identifier; i++) {
+        if(data->getBit(i)) c++;
     }
+    isSubscribed = std::count(subscriber.begin(), subscriber.end(), c-1);
     delete frame;
 }
 
 bool CanController::arbitrationSuccess(Packet *frame){
-    if( frame->getKind() == PRIO ) {
-        auto data = frame->peekDataAsBits();
-        for(int i=0; i<=identifier; i++) {
-            if(!data->getBit(i)) return false;
-        }
+    auto data = frame->peekDataAsBits();
+    for(int i=0; i<=identifier; i++) {
+        if(!data->getBit(i)) return false;
     }
     return true;
 }
