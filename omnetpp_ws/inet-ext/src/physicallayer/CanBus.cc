@@ -61,15 +61,15 @@ void CanBus::handleMessage(cMessage *msg) {
             sendUp(currentMsg);
             delete currentMsg;
             currentMsg = nullptr;
+            cancelEvent(busFree);
+            scheduleAt(simTime()+interFrameSpace, busFree);
         } else if(msg == busFree) {
             sendUp(freeSignal);
         }
     } else {
         if(currentMsg == nullptr) {
-            scheduleAt(simTime()+delay, busData);
-            cancelEvent(busFree);
-            scheduleAt(simTime()+interFrameSpace, busFree);
             currentMsg = msg;
+            scheduleAt(simTime()+delay, busData);
         } else {
             merge(msg);
         }
