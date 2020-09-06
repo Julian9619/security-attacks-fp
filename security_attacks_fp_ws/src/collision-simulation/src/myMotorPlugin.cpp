@@ -12,9 +12,9 @@
 
 namespace gazebo
 {
-    class CollisionModel : public ModelPlugin
+    class MotorPlugin : public ModelPlugin
     {
-        public:CollisionModel() : ModelPlugin(){
+        public:MotorPlugin() : ModelPlugin(){
 
         }
 
@@ -40,6 +40,12 @@ namespace gazebo
         private: std::thread rosQueueThread;
         private: int itCounter;
 
+        private: int customer;
+
+        private: int targetCoordinate;
+
+        private: int order;
+
         private: std_msgs::Int8MultiArray own_msg;
         /* 
         Dies ist die Nachricht, die an OMNET++ gesendet wird. Beachte:
@@ -54,85 +60,106 @@ namespace gazebo
             this->model = _model;
 
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-            std::bind(&CollisionModel::OnUpdate, this));
+            std::bind(&MotorPlugin::OnUpdate, this));
 
             //initialisiere ROS
             if (!ros::isInitialized())
             {
                 int argc = 0;
                 char** argv = NULL;
-                ros::init(argc, argv, "dein_Client_Name_TODO", ros::init_options::NoSigintHandler |
+                ros::init(argc, argv, "Car", ros::init_options::NoSigintHandler |
                                         ros::init_options::AnonymousName);
             }
 
-            rosNode.reset(new ros::NodeHandle("dein_Client_Name_TODO"));
+            rosNode.reset(new ros::NodeHandle("Car"));
             ros::SubscribeOptions so = ros::SubscribeOptions::create<std_msgs::Int8MultiArray>(
                 "/to_motor", 1,
-                boost::bind(&CollisionModel::OnRosMsg, this, _1), 
+                boost::bind(&MotorPlugin::OnRosMsg, this, _1), 
                 ros::VoidPtr(),&rosQueue);
 
             rosSub = rosNode->subscribe(so);
-            rosQueueThread =std::thread(std::bind(&CollisionModel::QueueThread, this));
+            rosQueueThread =std::thread(std::bind(&MotorPlugin::QueueThread, this));
 
             sender_pub = n.advertise<std_msgs::Int8MultiArray>("from_motor", 1000);
 
             itCounter = 1000;
 
-            collisionDetected = false;
-            
-            //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
-            //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
-            
-            ///////////TODO////////////TODO/////////////
-            own_msg.data.push_back(2); //CAN-Topic
-            own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-            ///////////TODO////////////TODO/////////////
+            customer = 2;
 
-            this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
-            this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
-            ROS_WARN("setVelocity test");
+            order = 1;
 
+            targetCoordinate = -1;  
+
+            ROS_WARN("PLugin loaded");        
 
         }//end of load
 
-        void OnUpdate()
-        {          
+        void start() {
+            this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -3.0);
+            this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -3.0);
+        }
 
-            //sende RequestNachricht für SensorCollision alle 10 iterationen
-            if(itCounter==6000){
-                std_msgs::Int8MultiArray requestmsg;
-                requestmsg.data.push_back(1); //CAN-Topic
-                requestmsg.data.push_back(-1); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-                if(ros::ok()) {
-                    ROS_WARN("models sends: %d %d", requestmsg.data[0], requestmsg.data[1]);
-                    sender_pub.publish(requestmsg);
-                }
-                itCounter = 0;
-                ROS_WARN("%f",this->model->GetJoint("left_wheel_hinge")->GetVelocity(0));
-                ROS_WARN("%f",this->model->GetJoint("right_wheel_hinge")->GetVelocity(0));
-                if(collisionDetected) {
-                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, 0.0);
-                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, 0.0);
+        void stop() {
+            this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, 0);
+            this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, 0);
+        }
+
+        void makeOrder(int num) {
+            
+        }
+
+        int getX() {
+            int x,y,z;
+            gazebo::math::Pose pose;     
+            pose = this->model->GetWorldPose();
+            math::Vector3 v(0, 0, 0);
+            v = pose.pos;
+            x = v.x; // x coordinate
+            y = v.y; // y coordinate
+            z = v.z; // z coordinate
+            //ROS_WARN("car: %d, %d, %d", x, y, z);
+            return x;
+        }
+
+        void OnUpdate()
+        {   
+            if(this->getX()>=targetCoordinate) {
+                this->stop();
+            }
+            else{
+                start();
+            }
+
+/*
+            if (this->customer == 0) {
+                this->stop();
+            }
+            else if (this->customer == 1) {
+                if (this->getX() >= 3) {
+                    this->stop();
                 }
                 else {
-                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
-                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
+                    this->start();
                 }
             }
-            itCounter++;
-
-
+            else if (this->customer == 2) {
+                if (this->getX() >= 7) {
+                    this->stop();
+                }
+                else {
+                    this->start();
+                }
+            }
+*/
         }//end of update
 
         
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
-            ROS_WARN("model recieved: %d %d", msg->data[0], msg->data[1]);
+            ROS_WARN("motor received: %d", msg->data[1]);
+
             if(msg->data[0]==1){
-                if(msg->data[1]==1){
-                    collisionDetected = true;
-                    ROS_WARN("%d", collisionDetected);
-                }
+                targetCoordinate = msg->data[1];
             }
         }
 
@@ -150,5 +177,5 @@ namespace gazebo
 
         
     };
-    GZ_REGISTER_MODEL_PLUGIN(CollisionModel)
+    GZ_REGISTER_MODEL_PLUGIN(MotorPlugin)
 }

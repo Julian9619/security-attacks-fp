@@ -12,9 +12,9 @@
 
 namespace gazebo
 {
-    class CollisionModel : public ModelPlugin
+    class RecieverPlugin : public ModelPlugin
     {
-        public:CollisionModel() : ModelPlugin(){
+        public:RecieverPlugin() : ModelPlugin(){
 
         }
 
@@ -54,7 +54,7 @@ namespace gazebo
             this->model = _model;
 
             this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-            std::bind(&CollisionModel::OnUpdate, this));
+            std::bind(&RecieverPlugin::OnUpdate, this));
 
             //initialisiere ROS
             if (!ros::isInitialized())
@@ -67,77 +67,51 @@ namespace gazebo
 
             rosNode.reset(new ros::NodeHandle("dein_Client_Name_TODO"));
             ros::SubscribeOptions so = ros::SubscribeOptions::create<std_msgs::Int8MultiArray>(
-                "/to_motor", 1,
-                boost::bind(&CollisionModel::OnRosMsg, this, _1), 
+                "/postbox", 1,
+                boost::bind(&RecieverPlugin::OnRosMsg, this, _1), 
                 ros::VoidPtr(),&rosQueue);
 
             rosSub = rosNode->subscribe(so);
-            rosQueueThread =std::thread(std::bind(&CollisionModel::QueueThread, this));
+            rosQueueThread =std::thread(std::bind(&RecieverPlugin::QueueThread, this));
 
-            sender_pub = n.advertise<std_msgs::Int8MultiArray>("from_motor", 1000);
-
-            itCounter = 1000;
-
-            collisionDetected = false;
+            sender_pub = n.advertise<std_msgs::Int8MultiArray>("from_reciever", 1000);
             
             //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
             //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
             
             ///////////TODO////////////TODO/////////////
-            own_msg.data.push_back(2); //CAN-Topic
-            own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-            ///////////TODO////////////TODO/////////////
+            //own_msg.data.push_back(2); //CAN-Topic
+            //own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
+            ///////////TODO////////////TODO////////////
 
-            this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
-            this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
-            ROS_WARN("setVelocity test");
-
-
+            ROS_WARN("Reciever loaded");
         }//end of load
 
         void OnUpdate()
         {          
-
-            //sende RequestNachricht für SensorCollision alle 10 iterationen
-            if(itCounter==6000){
-                std_msgs::Int8MultiArray requestmsg;
-                requestmsg.data.push_back(1); //CAN-Topic
-                requestmsg.data.push_back(-1); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-                if(ros::ok()) {
-                    ROS_WARN("models sends: %d %d", requestmsg.data[0], requestmsg.data[1]);
-                    sender_pub.publish(requestmsg);
-                }
-                itCounter = 0;
-                ROS_WARN("%f",this->model->GetJoint("left_wheel_hinge")->GetVelocity(0));
-                ROS_WARN("%f",this->model->GetJoint("right_wheel_hinge")->GetVelocity(0));
-                if(collisionDetected) {
-                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, 0.0);
-                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, 0.0);
-                }
-                else {
-                    this->model->GetJoint("left_wheel_hinge")->SetVelocity(0, -2.0);
-                    this->model->GetJoint("right_wheel_hinge")->SetVelocity(0, -2.0);
-                }
-            }
-            itCounter++;
-
 
         }//end of update
 
         
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
-            ROS_WARN("model recieved: %d %d", msg->data[0], msg->data[1]);
-            if(msg->data[0]==1){
-                if(msg->data[1]==1){
-                    collisionDetected = true;
-                    ROS_WARN("%d", collisionDetected);
-                }
+            std_msgs::Int8MultiArray recieverMsg;
+            recieverMsg.data.push_back(1); //CAN-messagetype
+            recieverMsg.data.push_back(0);
+            //ROS_WARN("revieved message");
+            recieverMsg.data[1] = msg->data[0];
+
+
+/*            if(msg->data[0]==1){
+                recieverMsg.data[1] = 3; //Postbox-Index
             }
+            if(msg->data[0] == 2){
+                recieverMsg.data[1] = 7;
+            }*/
+            sender_pub.publish(recieverMsg);
+            //ROS_WARN("reviever sended message");
         }
 
-        
-        
         // ROS helper function that processes messages
         private: void QueueThread() 
         {
@@ -150,5 +124,5 @@ namespace gazebo
 
         
     };
-    GZ_REGISTER_MODEL_PLUGIN(CollisionModel)
+    GZ_REGISTER_MODEL_PLUGIN(RecieverPlugin)
 }
