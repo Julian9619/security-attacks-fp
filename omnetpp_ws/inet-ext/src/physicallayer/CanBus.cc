@@ -19,14 +19,20 @@ class CanBus : public cSimpleModule
 {
   private:
     cMessage *currentMsg = nullptr;
-    cMessage *selfMsg = nullptr;
-    Packet *busFree = nullptr;
+    Packet *freeSignal = nullptr;
+
+    simtime_t delay = -1;
+    simtime_t interFrameSpace = -1;
+
+    cMessage *busData = nullptr;
+    cMessage *busFree = nullptr;
 
   protected:
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
 
-    virtual bool isHigherPrio(cMessage *msg);
+    virtual void merge(cMessage *msg);
+    virtual void sendUp(cMessage *msg);
 };
 
 #endif // ifndef __CANBUS_H
@@ -39,51 +45,61 @@ class CanBus : public cSimpleModule
 Define_Module(CanBus);
 
 void CanBus::initialize() {
-    selfMsg = new cMessage("SelfMsg");
-    busFree = new Packet;
-    busFree->setKind(BUSFREE);
+    freeSignal = new Packet;
+    freeSignal->setKind(BUSFREE);
+
+    delay = par("delay");
+    interFrameSpace = par("interFrameSpace");
+
+    busData = new cMessage("BusData");
+    busFree = new cMessage("BusFree");
 }
 
 void CanBus::handleMessage(cMessage *msg) {
     if(msg->isSelfMessage()) {
-        if(msg->getKind() == BUSFREE) {
-            int size = gateSize("cang$o");
-            for (int i = 0; i < size; i++) {
-                send(busFree->dup(), "cang$o", i);
-            }
-        } else {
-            //send currentMsg to all nodes
-            int size = gateSize("cang$o");
-            for (int i = 0; i < size; i++) {
-                send(currentMsg->dup(), "cang$o", i);
-            }
-            if(currentMsg->getKind() == DATA) {
-                scheduleAt(simTime()+5, busFree);
-            }
+        if(msg == busData) {
+            sendUp(currentMsg);
             delete currentMsg;
             currentMsg = nullptr;
+        } else if(msg == busFree) {
+            sendUp(freeSignal);
         }
     } else {
         if(currentMsg == nullptr) {
+            scheduleAt(simTime()+delay, busData);
+            if(msg->getKind() == DATA) {
+                scheduleAt(simTime()+interFrameSpace, busFree);
+            }
             currentMsg = msg;
-            scheduleAt(simTime()+1, selfMsg);
-        } else if(isHigherPrio(msg)) {
-            delete currentMsg;
-            currentMsg = msg;
+        } else {
+            merge(msg);
         }
     }
 }
 
-bool CanBus::isHigherPrio(cMessage *msg) {
+void CanBus::merge(cMessage *msg) {
     Packet *frame = dynamic_cast<Packet *>(msg);
     Packet *currentFrame = dynamic_cast<Packet *>(currentMsg);
-    if( frame->getKind() == PRIO ) {
-        auto data = frame->peekDataAsBytes();
-        int id = data->getByte(0);
-        auto currentData = currentFrame->peekDataAsBytes();
-        int currentId = currentData->getByte(0);
-        return id > currentId;
+    int frameSize = frame->getByteLength();
+    auto data = frame->peekDataAsBits();
+    //Pop data
+    auto currentData = currentFrame->popAtFront<BitsChunk>(B(frameSize));
+    //modify it
+    auto tmpData = (Ptr<BitsChunk>) currentData->dup();
+    for(int i=0; i<frameSize*8; i++) {
+        if( !data->getBit(i) ) {
+            tmpData->setBit(i, false);
+        }
     }
-    return false;
+    delete frame;
+    //Push data back
+    currentFrame->insertAtBack(tmpData);
+}
+
+void CanBus::sendUp(cMessage *msg) {
+    int size = gateSize("cang$o");
+    for (int i = 0; i < size; i++) {
+        send(msg->dup(), "cang$o", i);
+    }
 }
 

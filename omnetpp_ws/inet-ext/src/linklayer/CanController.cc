@@ -38,7 +38,6 @@ class CanController : public MacProtocolBase
         RECEIVE,
         BACKOFF,
     };
-
     cFSM fsm;
 
     Packet *arbitrationMsg = nullptr;
@@ -85,14 +84,18 @@ void CanController::initialize(int stage) {
     if (stage == INITSTAGE_LOCAL) {
         identifier = par("identifier");
 
+        //initialize Queue
         txQueue = check_and_cast<queueing::IPacketQueue *>(getSubmodule("queue"));
+        //initialize FSM
         fsm.setName("CanController State Machine");
 
+        //Msg to win arbitration
         arbitrationMsg = new Packet;
         arbitrationMsg->setKind(PRIO);
         auto data = makeShared<BytesChunk>();
         data->setBytes({identifier});
         arbitrationMsg->insertAtBack(data);;
+        //msg to schedule Transmission
         transmit = new cMessage("Transmit");
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
@@ -137,11 +140,8 @@ void CanController::handleWithFsm(cMessage *msg) {
             FSMA_Event_Transition(Idle-Backoff,
                                   isLowerMessage(msg) && frame->getKind()==PRIO,
                                   BACKOFF,
+                                  delete msg;
             );
-//            FSMA_Event_Transition(Idle-Receive,
-//                                  isLowerMessage(msg) && !isArbitrationMsg(frame),
-//                                  RECEIVE,
-//            );
         }
         FSMA_State(ARBITRATION)
         {
@@ -166,15 +166,15 @@ void CanController::handleWithFsm(cMessage *msg) {
             FSMA_Event_Transition(Backoff-Idle,
                                   isLowerMessage(msg) && frame->getKind()==BUSFREE,
                                   IDLE,
+                                  delete msg;
             );
         }
         FSMA_State(TRANSMIT)
         {
-            FSMA_Enter(scheduleAt(simTime(), transmit));
+            FSMA_Enter(sendDown(currentTxFrame->dup()));
             FSMA_Event_Transition(Transmit-Backoff,
-                                  msg == transmit,
+                                  isLowerMessage(msg) && frame->getKind()==DATA,
                                   BACKOFF,
-                                  sendDown(currentTxFrame->dup());
                                   deleteCurrentTxFrame();
             );
         }
