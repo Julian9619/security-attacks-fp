@@ -17,6 +17,7 @@ class DOS : public ApplicationBase
 {
   private:
     simtime_t delay = -1;
+    int counter = 0;
 
   protected:
     virtual void initialize(int stage) override;
@@ -51,14 +52,22 @@ void DOS::initialize(int stage) {
 
 void DOS::handleMessageWhenUp(cMessage *msg) {
     if (msg->isSelfMessage()) {
-        // send to bus
-        auto pkt = new Packet;
-        auto dataField = makeShared<BytesChunk>();
-        dataField->setBytes({0});
-        pkt->insertAtBack(dataField);
-        send(pkt, "lowerLayerOut");
+        if(counter < 4) {
+            // send to bus
+            auto pkt = new Packet;
+            auto dataField = makeShared<BytesChunk>();
+            dataField->setBytes({0});
+            pkt->insertAtBack(dataField);
+            send(pkt, "lowerLayerOut");
 
-        scheduleAt(simTime()+delay, msg);
+            scheduleAt(simTime()+delay, msg);
+            counter++;
+        } else {
+            scheduleAt(simTime()+0.7, msg);
+            counter = 0;
+        }
+    } else {
+        delete msg;
     }
 }
 

@@ -1,9 +1,11 @@
 package inet_ext.simulations;
 
 import inet_ext.CanHost;
+import inet_ext.Trojaner;
 import inet_ext.physicallayer.CanBus;
 import inet_ext.ros.RosInterface;
 import ned.DatarateChannel;
+
 
 network CanNet
 {
@@ -18,7 +20,7 @@ network CanNet
             parameters:
                 @display("p=50,50;i=misc/cloud");
         }
-        hostA: CanHost {
+        hostA: Trojaner {
             parameters:
                 @display("p=100,200");
         }
