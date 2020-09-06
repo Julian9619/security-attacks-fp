@@ -5,16 +5,17 @@
 #include <omnetpp/cobjectfactory.h>
 #include <omnetpp/cownedobject.h>
 #include <omnetpp/cpar.h>
-#include <omnetpp/csimulation.h>
 #include <omnetpp/platdep/platdefs.h>
 #include <omnetpp/regmacros.h>
 #include <iostream>
 
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/FSMA.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/InitStages.h"
+#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BitsChunk.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BytesChunk.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/Packet.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/common/Ptr.h"
+#include "../../../../../../omnetpp_ws/inet/src/inet/common/Units.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/linklayer/base/MacProtocolBase.h"
 #include "../../../../../../omnetpp_ws/inet/src/inet/queueing/contract/IPacketQueue.h"
 #include "../MsgType.cc"
@@ -92,9 +93,12 @@ void CanController::initialize(int stage) {
         //Msg to win arbitration
         arbitrationMsg = new Packet;
         arbitrationMsg->setKind(PRIO);
-        auto data = makeShared<BytesChunk>();
-        data->setBytes({identifier});
-        arbitrationMsg->insertAtBack(data);;
+        auto data = makeShared<BitsChunk>();
+        data->setBits({0,0,0,0,0,0,0,0});
+        for(int i=0; i<identifier; i++) {
+            data->setBit(i, 1);
+        }
+        arbitrationMsg->insertAtBack(data);
         //msg to schedule Transmission
         transmit = new cMessage("Transmit");
     }
@@ -205,10 +209,11 @@ void CanController::decapsulate(Packet *frame) {
 
 bool CanController::arbitrationSuccess(Packet *frame){
     if( frame->getKind() == PRIO ) {
-        auto data = frame->peekDataAsBytes();
-        int id = data->getByte(0);
-        return id == identifier;
+        auto data = frame->peekDataAsBits();
+        for(int i=0; i<identifier; i++) {
+            if(!data->getBit(i)) return false;
+        }
     }
-    return false;
+    return true;
 }
 

@@ -88,7 +88,7 @@ void CanBus::merge(cMessage *msg) {
     auto tmpData = (Ptr<BitsChunk>) currentData->dup();
     for(int i=0; i<frameSize*8; i++) {
         if( !data->getBit(i) ) {
-            tmpData->setBit(i, false);
+            tmpData->setBit(i, 0);
         }
     }
     delete frame;
