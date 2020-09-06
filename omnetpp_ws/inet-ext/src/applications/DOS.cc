@@ -15,6 +15,9 @@ using namespace inet;
 
 class DOS : public ApplicationBase
 {
+  private:
+    simtime_t delay = -1;
+
   protected:
     virtual void initialize(int stage) override;
 
@@ -41,8 +44,9 @@ void DOS::initialize(int stage) {
     ApplicationBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
+        delay = par("delay");
+        scheduleAt(simTime(), new cMessage("selfMessage"));
     }
-    scheduleAt(simTime(), new cMessage("selfMessage"));
 }
 
 void DOS::handleMessageWhenUp(cMessage *msg) {
@@ -54,7 +58,7 @@ void DOS::handleMessageWhenUp(cMessage *msg) {
         pkt->insertAtBack(dataField);
         send(pkt, "lowerLayerOut");
 
-        scheduleAt(simTime()+1, msg);
+        scheduleAt(simTime()+delay, msg);
     }
 }
 

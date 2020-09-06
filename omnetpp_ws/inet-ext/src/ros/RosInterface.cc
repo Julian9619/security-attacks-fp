@@ -19,6 +19,9 @@ void RosInterface::handleMessage(cMessage *msg) {
         // ros spin
         ros::spinOnce();
 
+        // schedule next call
+        scheduleAt(simTime()+1, msg); //TOTO simTime
+
         //////////////////////////////
 //        std_msgs::Int8MultiArray msgInt8;
 //        std_msgs::Int8MultiArray *rosMsg = &msgInt8;
@@ -47,9 +50,6 @@ void RosInterface::handleMessage(cMessage *msg) {
 //        sendDirect(pkt, gates.at(3));
 //        EV_INFO << data->str() << "\n";
         //////////////////////////////
-
-        // schedule next call
-        scheduleAt(simTime()+1, msg); //TOTO simTime
     }
 }
 
@@ -73,7 +73,7 @@ void RosInterface::publish(cModule* module, cMessage *msg) {
 
     //////////////////////////////
     auto pkt = check_and_cast<Packet *>(msg);
-    auto dataField = pkt->popAtBack<BytesChunk>(B(2));
+    auto dataField = pkt->popAtBack<BytesChunk>(B(1));
     int d0 = dataField->getByte(0);
     rosMsg.data.push_back(d0);
     EV_INFO << dataField->str() << "\n";

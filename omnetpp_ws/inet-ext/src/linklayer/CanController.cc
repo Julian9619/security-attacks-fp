@@ -136,6 +136,11 @@ void CanController::handleLowerPacket(Packet *packet) {
     handleWithFsm(packet);
 }
 
+bool test(Packet *frame) {
+    int b = frame->getKind();
+    return b==DATA;
+}
+
 void CanController::handleWithFsm(cMessage *msg) {
     Packet *frame = dynamic_cast<Packet *>(msg);
     FSMA_Switch(fsm)
@@ -171,6 +176,11 @@ void CanController::handleWithFsm(cMessage *msg) {
             FSMA_Event_Transition(Backoff-Receive,
                                   isLowerMessage(msg) && frame->getKind()==DATA && isSubscribed,
                                   RECEIVE,
+            );
+            FSMA_Event_Transition(Backoff-Receive,
+                                  isLowerMessage(msg) && frame->getKind()==DATA && !isSubscribed,
+                                  BACKOFF,
+                                  delete msg;
             );
             FSMA_Event_Transition(Backoff-Idle,
                                   isLowerMessage(msg) && frame->getKind()==BUSFREE,
@@ -215,7 +225,7 @@ void CanController::decapsulate(Packet *frame) {
 void CanController::checkIfSubscribed(Packet *frame) {
     auto data = frame->peekDataAsBits();
     int c=0;
-    for(int i=0; i<=identifier; i++) {
+    for(int i=0; i<=7; i++) {
         if(data->getBit(i)) c++;
     }
     isSubscribed = std::count(subscriber.begin(), subscriber.end(), c-1);
