@@ -67,9 +67,8 @@ void CanBus::handleMessage(cMessage *msg) {
     } else {
         if(currentMsg == nullptr) {
             scheduleAt(simTime()+delay, busData);
-            if(msg->getKind() == DATA) {
-                scheduleAt(simTime()+interFrameSpace, busFree);
-            }
+            cancelEvent(busFree);
+            scheduleAt(simTime()+interFrameSpace, busFree);
             currentMsg = msg;
         } else {
             merge(msg);
