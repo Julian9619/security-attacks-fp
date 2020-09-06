@@ -10,13 +10,13 @@
 #include <iostream>
 #include <vector>
 
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/FSMA.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/InitStages.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BitsChunk.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/Packet.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/Ptr.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/linklayer/base/MacProtocolBase.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/queueing/contract/IPacketQueue.h"
+#include "inet/common/FSMA.h"
+#include "inet/common/InitStages.h"
+#include "inet/common/packet/chunk/BitsChunk.h"
+#include "inet/common/packet/Packet.h"
+#include "inet/common/Ptr.h"
+#include "inet/linklayer/base/MacProtocolBase.h"
+#include "inet/queueing/contract/IPacketQueue.h"
 #include "../MsgType.cc"
 
 #ifndef __CANCONTROLLER_H

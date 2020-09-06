@@ -40,7 +40,7 @@ namespace gazebo
         private: std::thread rosQueueThread;
         private: int itCounter;
 
-        private: std_msgs::Int8MultiArray own_msg;
+        private: std_msgs::Int8MultiArray postboxMsg;
         /* 
         Dies ist die Nachricht, die an OMNET++ gesendet wird. Beachte:
         msg.data[0] = 'ID (die ID entspricht dem Topic mit dem ein CAN-Node Nachrichten pubished)'
@@ -67,7 +67,7 @@ namespace gazebo
 
             rosNode.reset(new ros::NodeHandle("Postbox1"));
             ros::SubscribeOptions so = ros::SubscribeOptions::create<std_msgs::Int8MultiArray>(
-                "/to_hostA", 1,
+                "/to_postbox", 1,
                 boost::bind(&postbox1Plugin::OnRosMsg, this, _1), 
                 ros::VoidPtr(),&rosQueue);
 
@@ -77,17 +77,12 @@ namespace gazebo
             sender_pub = n.advertise<std_msgs::Int8MultiArray>("postbox", 1000);
 
             itCounter = 0;
-
-            collisionDetected = false;
             
-            //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
-            //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
-            
-            ///////////TODO////////////TODO/////////////
-            own_msg.data.push_back(3); //CAN-Topic
-            ///////////TODO////////////TODO/////////////
+            //content of data the postbox sends
+            postboxMsg.data.push_back(3); 
 
-            ROS_WARN("loaded postbox1");
+
+            //ROS_WARN("loaded postbox1");
 
         }//end of load
 
@@ -96,15 +91,12 @@ namespace gazebo
 
             //sende RequestNachricht für SensorCollision alle 10 iterationen
             if(itCounter==1000){
-                std_msgs::Int8MultiArray requestmsg;
-                requestmsg.data.push_back(3); //CAN-Topic
-
                 if(ros::ok()) {
-                    //sender_pub.publish(requestmsg);
+                    //sender_pub.publish(postboxMsg);
                     //ROS_WARN("postbox1 send");
 
                 }
-                //itCounter = 0;
+                itCounter = 0;
             }
             itCounter++;
 

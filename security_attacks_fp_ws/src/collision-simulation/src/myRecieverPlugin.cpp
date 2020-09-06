@@ -96,20 +96,13 @@ namespace gazebo
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
             std_msgs::Int8MultiArray recieverMsg;
-            recieverMsg.data.push_back(1); //CAN-messagetype
-            recieverMsg.data.push_back(0);
-            //ROS_WARN("revieved message");
-            recieverMsg.data[1] = msg->data[0];
+            recieverMsg.data.push_back(1);
+            //ROS_WARN("Receiver revieved message");
+            recieverMsg.data[0] = msg->data[0];
 
 
-/*            if(msg->data[0]==1){
-                recieverMsg.data[1] = 3; //Postbox-Index
-            }
-            if(msg->data[0] == 2){
-                recieverMsg.data[1] = 7;
-            }*/
             sender_pub.publish(recieverMsg);
-            //ROS_WARN("reviever sended message");
+            //ROS_WARN("reveiver sended message");
         }
 
         // ROS helper function that processes messages

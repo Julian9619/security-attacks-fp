@@ -18,10 +18,10 @@ namespace gazebo
 
         }
 
-        /// \brief Pointer to the model
+        /// Pointer to the model
         private: physics::ModelPtr model;
 
-        /// \brief Connection that maintains a link between the contact model's
+        /// Connection that maintains a link between the contact model's
         /// updated signal and the OnUpdate callback.
         private: event::ConnectionPtr updateConnection;
 
@@ -38,13 +38,13 @@ namespace gazebo
         private: ros::CallbackQueue rosQueue;
         
         private: std::thread rosQueueThread;
+        
         private: int itCounter;
 
-        private: std_msgs::Int8MultiArray own_msg;
+        private: std_msgs::Int8MultiArray postboxMsg;
         /* 
         Dies ist die Nachricht, die an OMNET++ gesendet wird. Beachte:
-        msg.data[0] = 'ID (die ID entspricht dem Topic mit dem ein CAN-Node Nachrichten pubished)'
-        msg.data[1...] = 'Daten die über CAN versendet werden sollen (nur Int erlaubt!!!!)'
+        Es sind auch merhdimesnionale NAchrichten möglich.
         */
 
 
@@ -78,16 +78,9 @@ namespace gazebo
 
             itCounter = 0;
 
-            collisionDetected = false;
+            //content of data the postbox sends
+            postboxMsg.data.push_back(7);
             
-            //Topic für OMNET++ der Nachricht uebergeben (hier z.B. 1)
-            //zwei mal push_back um die data Eintraege zu erzeugen. Ansonsten entstehet ein Speicher-Fehler
-            
-            ///////////TODO////////////TODO/////////////
-            own_msg.data.push_back(2); //CAN-Topic
-            own_msg.data.push_back(0); //initalisialer Wert für Nachricht (in diesem fall -1 == request)
-            ///////////TODO////////////TODO/////////////
-
             //ROS_WARN("loaded postbox2");
 
         }//end of load
@@ -96,12 +89,11 @@ namespace gazebo
         {          
 
             //sende RequestNachricht für SensorCollision alle 10 iterationen
-            if(itCounter==5000){
-                std_msgs::Int8MultiArray requestmsg;
-                requestmsg.data.push_back(7); //CAN-Topic
+            if(itCounter==1000){
                 if(ros::ok()) {
-                    sender_pub.publish(requestmsg);
+                    sender_pub.publish(postboxMsg);
                     //ROS_WARN("postbox2 send");
+                    itCounter = 0;
                 }
             }
             itCounter++;
@@ -111,11 +103,7 @@ namespace gazebo
         
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
-            if(msg->data[0]==1){
-                if(msg->data[1]==1){
-                    collisionDetected = true;
-                }
-            }
+            
         }
 
         

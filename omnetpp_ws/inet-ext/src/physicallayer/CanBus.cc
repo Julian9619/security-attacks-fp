@@ -6,8 +6,8 @@
 #include <omnetpp/regmacros.h>
 #include <omnetpp/simtime.h>
 
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/chunk/BytesChunk.h"
-#include "../../../../../../omnetpp_ws/inet/src/inet/common/packet/Packet.h"
+#include "inet/common/packet/chunk/BytesChunk.h"
+#include "inet/common/packet/Packet.h"
 #include "../MsgType.cc"
 
 #ifndef __CANBUS_H

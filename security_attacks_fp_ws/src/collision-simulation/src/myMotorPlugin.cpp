@@ -129,38 +129,13 @@ namespace gazebo
             else{
                 start();
             }
-
-/*
-            if (this->customer == 0) {
-                this->stop();
-            }
-            else if (this->customer == 1) {
-                if (this->getX() >= 3) {
-                    this->stop();
-                }
-                else {
-                    this->start();
-                }
-            }
-            else if (this->customer == 2) {
-                if (this->getX() >= 7) {
-                    this->stop();
-                }
-                else {
-                    this->start();
-                }
-            }
-*/
         }//end of update
 
         
         public: void OnRosMsg(const std_msgs::Int8MultiArrayConstPtr &msg) 
         {
-            ROS_WARN("motor received: %d", msg->data[1]);
-
-            if(msg->data[0]==1){
-                targetCoordinate = msg->data[1];
-            }
+            ROS_WARN("motor received: %d", msg->data[0]);
+            targetCoordinate = msg->data[0];
         }
 
         
