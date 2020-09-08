@@ -20,19 +20,19 @@ network CanNet
             parameters:
                 @display("p=50,50;i=misc/cloud");
         }
-        hostA: Trojaner {
+        trojaner: Trojaner {
             parameters:
                 @display("p=100,200");
         }
-        reciever: CanHost {
+        hostA: CanHost {
             parameters:
                 @display("p=250,200");
         }
-        motor: CanHost {
+        reciever: CanHost {
             parameters:
                 @display("p=400,200");
         }
-        sensor: CanHost {
+        motor: CanHost {
             parameters:
                 @display("p=550,200");
         }
@@ -41,8 +41,8 @@ network CanNet
                 @display("p=325,100;b=500,6;o=#408060");
         }
     connections:
+        bus.cang++ <--> C <--> trojaner.cang;
         bus.cang++ <--> C <--> hostA.cang;
         bus.cang++ <--> C <--> reciever.cang;
         bus.cang++ <--> C <--> motor.cang;
-        bus.cang++ <--> C <--> sensor.cang;
 }

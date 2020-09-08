@@ -60,10 +60,10 @@ void DOS::handleMessageWhenUp(cMessage *msg) {
             pkt->insertAtBack(dataField);
             send(pkt, "lowerLayerOut");
 
-            scheduleAt(simTime()+delay, msg);
+            scheduleAt(simTime()+0.1*delay, msg);
             counter++;
         } else {
-            scheduleAt(simTime()+0.7, msg);
+            scheduleAt(simTime()+delay, msg);
             counter = 0;
         }
     } else {

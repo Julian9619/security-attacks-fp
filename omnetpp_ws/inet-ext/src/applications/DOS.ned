@@ -3,7 +3,7 @@ package inet_ext.applications;
 simple DOS like AppInterface
 {
     parameters:
-        double delay @unit(s) = default(1us);
+        double delay @unit(s) = default(12us);
         string rosModule = default("ros");
         @display("i=block/app");
         @class(DOS);
