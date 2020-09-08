@@ -6,8 +6,7 @@
 
 using namespace inet;
 
-class CanTransciever : public cSimpleModule
-{
+class CanTransciever : public cSimpleModule {
   protected:
     virtual void initialize() override {};
     virtual void handleMessage(cMessage *msg) override;

@@ -1,5 +1,5 @@
-#ifndef __DOS_H
-#define __DOS_H
+#ifndef __BURSTAPP_H
+#define __BURSTAPP_H
 
 #include "ros/RosInterface.h"
 #include "inet/common/ModuleAccess.h"
@@ -13,7 +13,7 @@
 
 using namespace inet;
 
-class DOS : public ApplicationBase
+class BurstApp : public ApplicationBase
 {
   private:
     simtime_t delay = -1;
@@ -29,19 +29,19 @@ class DOS : public ApplicationBase
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
 };
 
-#endif // ifndef __DOS_H
+#endif // ifndef __BURSTAPP_H
 
-//#include "DOS.h"
+//#include "BurstApp.h"
 //
 //using namespace inet;
 
 // register module class with OMNeT++
-Define_Module(DOS);
+Define_Module(BurstApp);
 
 /// TODO ///
 /// message lowerLayer with IDENTIFIER
 
-void DOS::initialize(int stage) {
+void BurstApp::initialize(int stage) {
     ApplicationBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
@@ -50,20 +50,20 @@ void DOS::initialize(int stage) {
     }
 }
 
-void DOS::handleMessageWhenUp(cMessage *msg) {
+void BurstApp::handleMessageWhenUp(cMessage *msg) {
     if (msg->isSelfMessage()) {
         if(counter < 4) {
             // send to bus
             auto pkt = new Packet;
             auto dataField = makeShared<BytesChunk>();
-            dataField->setBytes({0});
+            dataField->setBytes({42});
             pkt->insertAtBack(dataField);
             send(pkt, "lowerLayerOut");
 
-            scheduleAt(simTime()+delay, msg);
+            scheduleAt(simTime()+0.1*delay, msg);
             counter++;
         } else {
-            scheduleAt(simTime()+0.7, msg);
+            scheduleAt(simTime()+delay, msg);
             counter = 0;
         }
     } else {
@@ -71,15 +71,15 @@ void DOS::handleMessageWhenUp(cMessage *msg) {
     }
 }
 
-void DOS::handleStartOperation(LifecycleOperation *operation) {
+void BurstApp::handleStartOperation(LifecycleOperation *operation) {
     EV_INFO << "Starting application\n";
 }
 
-void DOS::handleStopOperation(LifecycleOperation *operation) {
+void BurstApp::handleStopOperation(LifecycleOperation *operation) {
     EV_INFO << "Stop the application\n";
 }
 
-void DOS::handleCrashOperation(LifecycleOperation *operation) {
+void BurstApp::handleCrashOperation(LifecycleOperation *operation) {
     EV_INFO << "Crash the application\n";
 }
 
