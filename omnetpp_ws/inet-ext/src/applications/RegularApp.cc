@@ -1,5 +1,5 @@
-#ifndef __PRIVILEGEESCALATION_H
-#define __PRIVILEGEESCALATION_H
+#ifndef __REGULARAPP_H
+#define __REGULARAPP_H
 
 #include "ros/RosInterface.h"
 #include "inet/common/ModuleAccess.h"
@@ -13,7 +13,7 @@
 
 using namespace inet;
 
-class PrivilegeEscalation : public ApplicationBase
+class RegularApp : public ApplicationBase
 {
   private:
     simtime_t delay = -1;
@@ -28,19 +28,19 @@ class PrivilegeEscalation : public ApplicationBase
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
 };
 
-#endif // ifndef __PRIVILEGEESCALATION_H
+#endif // ifndef __REGULARAPP_H
 
-//#include "PrivilegeEscalation.h"
+//#include "RegularApp.h"
 //
 //using namespace inet;
 
 // register module class with OMNeT++
-Define_Module(PrivilegeEscalation);
+Define_Module(RegularApp);
 
 /// TODO ///
 /// message lowerLayer with IDENTIFIER
 
-void PrivilegeEscalation::initialize(int stage) {
+void RegularApp::initialize(int stage) {
     ApplicationBase::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
@@ -49,12 +49,12 @@ void PrivilegeEscalation::initialize(int stage) {
     }
 }
 
-void PrivilegeEscalation::handleMessageWhenUp(cMessage *msg) {
+void RegularApp::handleMessageWhenUp(cMessage *msg) {
     if (msg->isSelfMessage()) {
         // send to bus
         auto pkt = new Packet;
         auto dataField = makeShared<BytesChunk>();
-        dataField->setBytes({0});
+        dataField->setBytes({42});
         pkt->insertAtBack(dataField);
 
         send(pkt, "lowerLayerOut");
@@ -64,15 +64,15 @@ void PrivilegeEscalation::handleMessageWhenUp(cMessage *msg) {
     }
 }
 
-void PrivilegeEscalation::handleStartOperation(LifecycleOperation *operation) {
+void RegularApp::handleStartOperation(LifecycleOperation *operation) {
     EV_INFO << "Starting application\n";
 }
 
-void PrivilegeEscalation::handleStopOperation(LifecycleOperation *operation) {
+void RegularApp::handleStopOperation(LifecycleOperation *operation) {
     EV_INFO << "Stop the application\n";
 }
 
-void PrivilegeEscalation::handleCrashOperation(LifecycleOperation *operation) {
+void RegularApp::handleCrashOperation(LifecycleOperation *operation) {
     EV_INFO << "Crash the application\n";
 }
 
