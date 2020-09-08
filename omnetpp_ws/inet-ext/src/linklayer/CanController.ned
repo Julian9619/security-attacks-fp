@@ -6,6 +6,8 @@ import inet.queueing.contract.IPacketQueue;
 module CanController extends MacProtocolBase
 {
     parameters:
+        int identifier;
+        string subscriber;
         @class(CanController);
     submodules:
         queue: <default("PacketQueue")> like IPacketQueue {

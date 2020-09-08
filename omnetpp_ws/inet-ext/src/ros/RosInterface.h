@@ -12,6 +12,7 @@ using namespace inet;
 class RosInterface : public cSimpleModule
 {
   private:
+    simtime_t delay = -1;
     std::vector<cGate *> gates;
     std::vector<ros::Subscriber> subs;
     std::map<std::string, ros::Publisher> pubs;

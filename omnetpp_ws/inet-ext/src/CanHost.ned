@@ -1,8 +1,9 @@
 package inet_ext;
 
-import inet_ext.applications.RosApp;
-import inet_ext.linklayer.CanInterface;
 import inet.node.base.LinkLayerNodeBase;
+import inet_ext.applications.AppInterface;
+import inet_ext.linklayer.CanInterface;
+
 
 module CanHost extends LinkLayerNodeBase
 {
@@ -10,7 +11,7 @@ module CanHost extends LinkLayerNodeBase
     gates:
         inout cang @labels(CanFrame-conn) @allowUnconnected;
     submodules:
-        app: RosApp {
+        app: <> like AppInterface {
             parameters:
                 @display("p=600,425");
         }

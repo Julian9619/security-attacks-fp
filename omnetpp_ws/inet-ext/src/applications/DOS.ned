@@ -1,11 +1,12 @@
 package inet_ext.applications;
 
-simple RosApp like AppInterface
+simple DOS like AppInterface
 {
     parameters:
+        double delay @unit(s) = default(1us);
         string rosModule = default("ros");
         @display("i=block/app");
-        @class(RosApp);
+        @class(DOS);
     gates:
         input rosIn @directIn;
         input lowerLayerIn;
