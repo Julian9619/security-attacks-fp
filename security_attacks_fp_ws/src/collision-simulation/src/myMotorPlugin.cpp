@@ -16,6 +16,7 @@ namespace gazebo
     /**
      * every gazebo model-plugin is implemented as a C++ class which inherets from ModelPlugin,
      * with specitifc mehtods which are explaint below
+     * This Plugin is controlling the vehicles speed and reacts to incoming messages
      **/
     class MotorPlugin : public ModelPlugin
     {
@@ -24,10 +25,10 @@ namespace gazebo
 
         }
 
-        // \brief Pointer to the model
+        // brief Pointer to the model
         private: physics::ModelPtr model;
 
-        // \brief Connection that maintains a link between the contact model's
+        // brief Connection that maintains a link between the contact model's
         // updated signal and the OnUpdate callback.
         private: event::ConnectionPtr updateConnection;
 
